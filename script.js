@@ -21,10 +21,23 @@ const twitterContainer = document.getElementById("twitter-container");
 const reposContainer = document.getElementById("repos-container");
 
 searchBtn.addEventListener("click", searchUser);
-searchInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") searchUser();
-});
+const debouncedSearch=debounce(()=>{
+    const username=searchInput.value.trim();
+    if(username!==" "){
+        searchUser();
+    }
+},500);
+searchInput.addEventListener("input", debouncedSearch);
+function debounce(fn,delay){
+    let timeoutId;
+    return function(...args){
+        clearTimeout(timeoutId);
+        timeoutId=setTimeout(()=>{
+            fn.apply(this,args);
 
+        },delay);
+    };
+}
 async function searchUser() {
   const username = searchInput.value.trim();
 
