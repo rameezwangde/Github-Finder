@@ -40,28 +40,29 @@ function debounce(fn,delay){
 }
 async function searchUser() {
   const username = searchInput.value.trim();
-
   if (!username) return alert("Please enter a username");
 
+  searchBtn.disabled = true; // 🔒 Disable button
+
   try {
-    // reset the ui
     profileContainer.classList.add("hidden");
     errorContainer.classList.add("hidden");
 
-    // https://api.github.com/users/burakorkmez
     const response = await fetch(`https://api.github.com/users/${username}`);
     if (!response.ok) throw new Error("User not found");
 
     const userData = await response.json();
-    console.log("user data is here", userData);
-
     displayUserData(userData);
 
-    fetchRepositories(userData.repos_url);
+    await fetchRepositories(userData.repos_url); // ✅ wait until repos fetched
+
   } catch (error) {
     showError();
+  } finally {
+    searchBtn.disabled = false; // 🔓 Re-enable button no matter what
   }
 }
+
 
 async function fetchRepositories(reposUrl) {
   reposContainer.innerHTML=`<div class="loading-repos">Loading repositories...</div>`;
