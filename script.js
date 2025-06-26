@@ -70,6 +70,7 @@ async function fetchRepositories(reposUrl) {
     const response = await fetch(reposUrl + "?per_page=6");
     const repos = await response.json();
     displayRepos(repos);
+    updateLanguageChart(repos);
   } catch (error) {
     reposContainer.innerHTML = `<div class="no-repos">${error.message}</div>`;
   }
@@ -176,3 +177,70 @@ function formatDate(dateString) {
 
 // searchInput.value = "rameezwangde";
 // searchUser();
+
+let chartInstance = null;
+
+function updateLanguageChart(repos) {
+  const languageCount = {};
+
+  repos.forEach((repo) => {
+    const lang = repo.language;
+    if (lang) {
+      languageCount[lang] = (languageCount[lang] || 0) + 1;
+    }
+  });
+
+  const sortedLanguages = Object.entries(languageCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  const labels = sortedLanguages.map(([lang]) => lang);
+  const data = sortedLanguages.map(([_, count]) => count);
+
+  const ctx = document.getElementById("languageChart").getContext("2d");
+
+  // Destroy previous chart if exists
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: "bar", // change to "pie" if you prefer
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Repo Count",
+        data: data,
+        backgroundColor: [
+          "#8b5cf6", "#a78bfa", "#c4b5fd"
+        ],
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#f3f4f6"
+          },
+          grid: {
+            color: "rgba(255,255,255,0.05)"
+          }
+        },
+        x: {
+          ticks: {
+            color: "#f3f4f6"
+          },
+          grid: {
+            color: "rgba(255,255,255,0.05)"
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: false
+        }
+      }
+    }
+  });
+}
